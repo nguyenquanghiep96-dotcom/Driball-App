@@ -190,6 +190,14 @@ export default function OrderDetailPage() {
               />
             </div>
             <SourcePicker value={editForm.source || ''} onChange={v => updateEditField('source', v)} />
+            <div className="form-row">
+              <label>Ngày tạo đơn</label>
+              <input
+                type="date"
+                value={editForm.createdAt ? editForm.createdAt.substring(0, 10) : ''}
+                onChange={e => updateEditField('createdAt', e.target.value)}
+              />
+            </div>
           </div>
 
           {/* Product Selection */}

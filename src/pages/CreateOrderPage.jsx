@@ -149,6 +149,14 @@ export default function CreateOrderPage() {
             />
           </div>
           <SourcePicker value={form.source} onChange={v => updateField('source', v)} />
+          <div className="form-row">
+            <label>Ngày tạo đơn</label>
+            <input
+              type="date"
+              value={form.createdAt ? form.createdAt.substring(0, 10) : ''}
+              onChange={e => updateField('createdAt', e.target.value)}
+            />
+          </div>
         </div>
 
         {/* Product Selection */}

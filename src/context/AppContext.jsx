@@ -19,7 +19,7 @@ function reducer(state, action) {
       return { ...state, ...action.payload };
 
     case 'ADD_ORDER': {
-      const newOrder = { ...action.payload, id: generateId(), createdAt: getToday() };
+      const newOrder = { ...action.payload, id: generateId(), createdAt: action.payload.createdAt || getToday() };
       // Async save to Supabase
       db.upsertOrder(newOrder).catch(e => console.error('Failed to save order:', e));
       return {

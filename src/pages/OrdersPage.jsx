@@ -18,7 +18,8 @@ export default function OrdersPage() {
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredOrders = useMemo(() => {
-    let orders = state.orders;
+    const currentMonth = getCurrentMonth();
+    let orders = state.orders.filter(o => o.createdAt && o.createdAt.startsWith(currentMonth));
     if (activeFilter === 'pending') {
       orders = orders.filter(o => o.status !== 'completed');
     } else if (activeFilter === 'completed') {
