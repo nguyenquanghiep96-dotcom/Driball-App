@@ -16,10 +16,24 @@ export default function OrdersPage() {
   const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const currentMonth = getCurrentMonth();
+  const [selectedMonth, setSelectedMonth] = useState(currentMonth);
+
+  const availableMonths = useMemo(() => {
+    const months = new Set();
+    months.add(currentMonth);
+    state.orders.forEach(o => {
+      if (o.createdAt) months.add(o.createdAt.substring(0, 7));
+    });
+    return Array.from(months).sort((a, b) => b.localeCompare(a));
+  }, [state.orders, currentMonth]);
+
+  const selectedMonthOrders = useMemo(() => {
+    return state.orders.filter(o => o.createdAt && o.createdAt.startsWith(selectedMonth));
+  }, [state.orders, selectedMonth]);
 
   const filteredOrders = useMemo(() => {
-    const currentMonth = getCurrentMonth();
-    let orders = state.orders.filter(o => o.createdAt && o.createdAt.startsWith(currentMonth));
+    let orders = selectedMonthOrders;
     if (activeFilter === 'pending') {
       orders = orders.filter(o => o.status !== 'completed');
     } else if (activeFilter === 'completed') {
@@ -32,14 +46,14 @@ export default function OrdersPage() {
       );
     }
     return orders;
-  }, [state.orders, activeFilter, searchQuery]);
+  }, [selectedMonthOrders, activeFilter, searchQuery]);
 
   const monthStats = useMemo(() => {
-    return calculateMonthlyStats(state.orders, state.products, getCurrentMonth());
-  }, [state.orders, state.products]);
+    return calculateMonthlyStats(state.orders, state.products, selectedMonth);
+  }, [state.orders, state.products, selectedMonth]);
 
   const totalPending = useMemo(() => {
-    return state.orders
+    return selectedMonthOrders
       .filter(o => o.status !== 'cancelled' && o.status !== 'completed')
       .reduce((sum, order) => {
         const product = state.products.find(p => p.id === order.productId);
@@ -49,7 +63,7 @@ export default function OrdersPage() {
         }
         return sum;
       }, 0);
-  }, [state.orders, state.products]);
+  }, [selectedMonthOrders, state.products]);
 
   return (
     <div className="page">
@@ -66,11 +80,28 @@ export default function OrdersPage() {
         </div>
       </div>
 
+      {/* Month Picker */}
+      <div className="filter-scroll" style={{ paddingTop: 0, paddingBottom: 16 }}>
+        {availableMonths.map(m => {
+          const [year, month] = m.split('-');
+          return (
+            <button
+              key={m}
+              className={`filter-pill ${selectedMonth === m ? 'active' : ''}`}
+              onClick={() => setSelectedMonth(m)}
+              style={{ background: selectedMonth === m ? 'var(--color-blue)' : 'var(--color-bg-secondary)' }}
+            >
+              Tháng {month}, {year}
+            </button>
+          );
+        })}
+      </div>
+
       {/* Stats Summary */}
       <div className="page-content">
         <div className="stats-grid">
           <div className="stat-card accent-blue">
-            <div className="stat-card-value">{state.orders.length}</div>
+            <div className="stat-card-value">{monthStats.totalOrders}</div>
             <div className="stat-card-label">Tổng đơn</div>
           </div>
           <div className="stat-card accent-orange">
