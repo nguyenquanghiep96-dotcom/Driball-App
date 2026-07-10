@@ -96,10 +96,8 @@ export default function CreateOrderPage() {
         printCost,
         logo3dCost,
         outsourceCost,
-        overrideUnitPrice: form.overrideUnitPrice,
-        overrideProdCost: form.overrideProdCost,
-        snapshotUnitPrice: unitPrice,
-        snapshotProdCost: prodCost,
+        overrideUnitPrice: form.overrideUnitPrice !== null ? form.overrideUnitPrice : unitPrice,
+        overrideProdCost: form.overrideProdCost !== null ? form.overrideProdCost : prodCost,
       },
     });
     navigate('/');
@@ -362,7 +360,7 @@ export default function CreateOrderPage() {
         <div className="form-label">Giá tạm tính</div>
         <div className="form-input-group">
           <div className="form-row">
-            <label>Đơn giá{form.overrideUnitPrice !== null ? ' ✧' : ''}</label>
+            <label>Đơn giá</label>
             <span
               className="text-body"
               onClick={() => {

@@ -52,7 +52,7 @@ export function getPriceByQuantity(product, quantity) {
  */
 export function calculateOrderTotal(order, product) {
   const quantity = order.quantity || 1;
-  const unitPrice = order.snapshotUnitPrice ?? (order.overrideUnitPrice !== null && order.overrideUnitPrice !== undefined ? order.overrideUnitPrice : getPriceByQuantity(product, quantity));
+  const unitPrice = order.overrideUnitPrice !== null && order.overrideUnitPrice !== undefined ? order.overrideUnitPrice : (product ? getPriceByQuantity(product, quantity) : 0);
   const printCost = Number(order.printCost) || Number(order.printPackagePrice) || 0;
   const logo3dCost = Number(order.logo3dCost) || 0;
   return (unitPrice + printCost + logo3dCost) * quantity;

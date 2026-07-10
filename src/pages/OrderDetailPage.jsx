@@ -89,10 +89,27 @@ export default function OrderDetailPage() {
 
   const saveEdit = () => {
     const editProduct = state.products.find(p => p.id === editForm.productId);
+    const isSameProduct = editForm.productId === order.productId;
+    
     const editBaseUnitPrice = editProduct ? getPriceByQuantity(editProduct, editForm.quantity) : 0;
-    const editUnitPrice = editForm.overrideUnitPrice !== null ? Number(editForm.overrideUnitPrice) : editBaseUnitPrice;
+    let editUnitPrice;
+    if (editForm.overrideUnitPrice !== null) {
+      editUnitPrice = Number(editForm.overrideUnitPrice);
+    } else if (isSameProduct && order.overrideUnitPrice !== undefined && order.overrideUnitPrice !== null) {
+      editUnitPrice = order.overrideUnitPrice;
+    } else {
+      editUnitPrice = editBaseUnitPrice;
+    }
+
     const editBaseProdCost = editProduct ? calculateProductionCost(editProduct) : 0;
-    const editProdCost = editForm.overrideProdCost !== null ? Number(editForm.overrideProdCost) : editBaseProdCost;
+    let editProdCost;
+    if (editForm.overrideProdCost !== null) {
+      editProdCost = Number(editForm.overrideProdCost);
+    } else if (isSameProduct && order.overrideProdCost !== undefined && order.overrideProdCost !== null) {
+      editProdCost = order.overrideProdCost;
+    } else {
+      editProdCost = editBaseProdCost;
+    }
 
     dispatch({
       type: 'UPDATE_ORDER',
@@ -103,10 +120,8 @@ export default function OrderDetailPage() {
         printCost: Number(editForm.printCost) || 0,
         logo3dCost: Number(editForm.logo3dCost) || 0,
         outsourceCost: Number(editForm.outsourceCost) || 0,
-        overrideUnitPrice: editForm.overrideUnitPrice,
-        overrideProdCost: editForm.overrideProdCost,
-        snapshotUnitPrice: editUnitPrice,
-        snapshotProdCost: editProdCost,
+        overrideUnitPrice: editUnitPrice,
+        overrideProdCost: editProdCost,
       },
     });
     setIsEditing(false);
@@ -374,7 +389,7 @@ export default function OrderDetailPage() {
           <div className="form-label">Giá tạm tính</div>
           <div className="form-input-group">
             <div className="form-row">
-              <label>Đơn giá{editForm.overrideUnitPrice !== null ? ' ✧' : ''}</label>
+              <label>Đơn giá</label>
               <span
                 className="text-body"
                 onClick={() => {
