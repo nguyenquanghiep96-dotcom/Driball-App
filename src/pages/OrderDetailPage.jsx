@@ -129,15 +129,34 @@ export default function OrderDetailPage() {
 
   if (isEditing && editForm) {
     const editProduct = state.products.find(p => p.id === editForm.productId);
+    const isSameProduct = editForm.productId === order.productId;
     const editPrintCost = Number(editForm.printCost) || 0;
     const editLogo3d = Number(editForm.logo3dCost) || 0;
     const editOutsource = Number(editForm.outsourceCost) || 0;
+    
     const editBaseUnitPrice = editProduct ? getPriceByQuantity(editProduct, editForm.quantity) : 0;
-    const editUnitPrice = editForm.overrideUnitPrice !== null ? Number(editForm.overrideUnitPrice) : editBaseUnitPrice;
+    let editUnitPrice;
+    if (editForm.overrideUnitPrice !== null) {
+      editUnitPrice = Number(editForm.overrideUnitPrice);
+    } else if (isSameProduct && order.snapshotUnitPrice !== undefined) {
+      editUnitPrice = order.snapshotUnitPrice;
+    } else {
+      editUnitPrice = editBaseUnitPrice;
+    }
+
     const editUnitAfterPrint = editUnitPrice + editPrintCost + editLogo3d;
     const editTotal = editUnitAfterPrint * editForm.quantity;
+    
     const editBaseProdCost = editProduct ? calculateProductionCost(editProduct) : 0;
-    const editProdCost = editForm.overrideProdCost !== null ? Number(editForm.overrideProdCost) : editBaseProdCost;
+    let editProdCost;
+    if (editForm.overrideProdCost !== null) {
+      editProdCost = Number(editForm.overrideProdCost);
+    } else if (isSameProduct && order.snapshotProdCost !== undefined) {
+      editProdCost = order.snapshotProdCost;
+    } else {
+      editProdCost = editBaseProdCost;
+    }
+
     const editProfitPerUnit = editUnitAfterPrint - editProdCost - editOutsource;
     const editTotalProfit = editProfitPerUnit * editForm.quantity;
     const editRetailPrice = editProduct?.prices?.tier1 || 0;
