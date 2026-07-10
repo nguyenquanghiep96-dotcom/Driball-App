@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Package } from 'lucide-react';
+import { Plus, Search, Package, Calendar } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import OrderCard from '../components/OrderCard';
 import { formatCurrency, formatCompact, calculateOrderTotal, calculateMonthlyStats, getCurrentMonth } from '../utils/calculations';
@@ -16,21 +16,19 @@ export default function OrdersPage() {
   const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const currentMonth = getCurrentMonth();
-  const [selectedMonth, setSelectedMonth] = useState(currentMonth);
+  const currentMonthStr = getCurrentMonth(); // 'YYYY-MM'
+  const [currentY, currentM] = currentMonthStr.split('-');
+  const [selectedYear, setSelectedYear] = useState(currentY);
+  const [selectedMonth, setSelectedMonth] = useState(currentM); // '01' to '12'
+  const [yearPickerOpen, setYearPickerOpen] = useState(false);
 
-  const availableMonths = useMemo(() => {
-    const months = new Set();
-    months.add(currentMonth);
-    state.orders.forEach(o => {
-      if (o.createdAt) months.add(o.createdAt.substring(0, 7));
-    });
-    return Array.from(months).sort((a, b) => b.localeCompare(a));
-  }, [state.orders, currentMonth]);
+  const MONTHS = Array.from({ length: 12 }, (_, i) => (i + 1).toString().padStart(2, '0'));
+
+  const selectedMonthPrefix = `${selectedYear}-${selectedMonth}`;
 
   const selectedMonthOrders = useMemo(() => {
-    return state.orders.filter(o => o.createdAt && o.createdAt.startsWith(selectedMonth));
-  }, [state.orders, selectedMonth]);
+    return state.orders.filter(o => o.createdAt && o.createdAt.startsWith(selectedMonthPrefix));
+  }, [state.orders, selectedMonthPrefix]);
 
   const filteredOrders = useMemo(() => {
     let orders = selectedMonthOrders;
@@ -49,20 +47,10 @@ export default function OrdersPage() {
   }, [selectedMonthOrders, activeFilter, searchQuery]);
 
   const monthStats = useMemo(() => {
-    return calculateMonthlyStats(state.orders, state.products, selectedMonth);
-  }, [state.orders, state.products, selectedMonth]);
+    return calculateMonthlyStats(state.orders, state.products, selectedMonthPrefix);
+  }, [state.orders, state.products, selectedMonthPrefix]);
 
-  const totalPending = useMemo(() => {
-    return selectedMonthOrders
-      .filter(o => o.status !== 'cancelled' && o.status !== 'completed')
-      .reduce((sum, order) => {
-        const product = state.products.find(p => p.id === order.productId);
-        if (product) {
-          return sum + calculateOrderTotal(order, product);
-        }
-        return sum;
-      }, 0);
-  }, [selectedMonthOrders, state.products]);
+
 
   return (
     <div className="page">
@@ -70,19 +58,48 @@ export default function OrdersPage() {
       <div className="page-header">
         <div className="header-row">
           <h1 className="text-large-title">Đơn hàng</h1>
-          <button
-            className="header-action"
-            onClick={() => navigate('/create')}
-          >
-            <Plus size={22} />
-          </button>
+          <div style={{ display: 'flex', gap: 8, position: 'relative' }}>
+            <button className="header-action" onClick={() => setYearPickerOpen(!yearPickerOpen)}>
+              <Calendar size={22} />
+            </button>
+            {yearPickerOpen && (
+              <div style={{
+                position: 'absolute', top: 40, right: 40,
+                background: 'var(--color-bg-elevated)',
+                borderRadius: 12, padding: 8, zIndex: 100,
+                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                border: '1px solid var(--color-separator)',
+                minWidth: 100,
+              }}>
+                {['2025', '2026'].map(y => (
+                  <button key={y} onClick={() => { setSelectedYear(y); setYearPickerOpen(false); }}
+                    style={{
+                      display: 'block', width: '100%', padding: '8px 16px',
+                      background: selectedYear === y ? 'var(--color-bg-secondary)' : 'transparent',
+                      border: 'none', textAlign: 'center', borderRadius: 8,
+                      fontFamily: 'var(--font-family)', fontSize: 15, fontWeight: 500,
+                      color: selectedYear === y ? 'var(--color-blue)' : 'var(--color-label)',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    Năm {y}
+                  </button>
+                ))}
+              </div>
+            )}
+            <button
+              className="header-action"
+              onClick={() => navigate('/create')}
+            >
+              <Plus size={22} />
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Month Picker */}
       <div className="filter-scroll" style={{ paddingTop: 0, paddingBottom: 16 }}>
-        {availableMonths.map(m => {
-          const [year, month] = m.split('-');
+        {MONTHS.map(m => {
           return (
             <button
               key={m}
@@ -90,7 +107,7 @@ export default function OrdersPage() {
               onClick={() => setSelectedMonth(m)}
               style={{ background: selectedMonth === m ? 'var(--color-blue)' : 'var(--color-bg-secondary)' }}
             >
-              Tháng {month}, {year}
+              Tháng {parseInt(m, 10)}
             </button>
           );
         })}
@@ -104,8 +121,8 @@ export default function OrdersPage() {
             <div className="stat-card-label">Tổng đơn</div>
           </div>
           <div className="stat-card accent-orange">
-            <div className="stat-card-value">{formatCompact(totalPending)}</div>
-            <div className="stat-card-label">Đang xử lý</div>
+            <div className="stat-card-value">{formatCompact(monthStats.totalProfit)}</div>
+            <div className="stat-card-label">Lợi nhuận ròng</div>
           </div>
           <div className="stat-card accent-green">
             <div className="stat-card-value">{formatCompact(monthStats.totalRevenue)}</div>

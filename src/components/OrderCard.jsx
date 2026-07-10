@@ -110,31 +110,16 @@ export default function OrderCard({ order }) {
             {formatCurrency(profit)}
           </div>
         </div>
-        <div>
-          <div className="text-caption1 text-tertiary">Đã cọc</div>
-          <div className="text-subheadline" style={{ fontWeight: 600, color: order.deposit > 0 ? 'var(--color-green)' : 'var(--color-label-secondary)' }}>
-            {formatCurrency(order.deposit || 0)}
-          </div>
-        </div>
-        <div>
-          <div className="text-caption1 text-tertiary">Còn lại</div>
-          <div className="text-subheadline" style={{ fontWeight: 600, color: 'var(--color-orange)' }}>
-            {formatCurrency(total - (order.deposit || 0))}
-          </div>
-        </div>
       </div>
 
       {/* Bottom row: Dates */}
       <div style={{ paddingTop: 8, borderTop: '0.33px solid var(--color-separator)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <span className="text-caption1 text-tertiary">
-            Ngày chốt: {formatDate(order.depositDate || order.createdAt)}
+            Dự kiến giao: {deliveryDate ? formatDate(deliveryDate) : '—'}
           </span>
           <ChevronRight size={14} color="var(--color-label-quaternary)" />
         </div>
-        <span className="text-caption1 text-tertiary">
-          Dự kiến giao: {deliveryDate ? formatDate(deliveryDate) : '—'}
-        </span>
       </div>
     </div>
   );
