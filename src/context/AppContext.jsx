@@ -173,7 +173,7 @@ export function AppProvider({ children }) {
         color: 'var(--color-label-secondary)',
         fontFamily: 'var(--font-family)',
       }}>
-        <TextShimmer style={{ fontSize: 24, fontWeight: 600 }}>
+        <TextShimmer shimmerColor="var(--color-blue)" style={{ fontSize: 24, fontWeight: 600 }}>
           Xin chào!
         </TextShimmer>
       </div>
