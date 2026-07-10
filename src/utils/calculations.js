@@ -127,11 +127,12 @@ export function getCurrentMonth() {
 /**
  * Calculate monthly revenue from orders
  */
-export function calculateMonthlyStats(orders, products, month) {
+export function calculateMonthlyStats(orders, products, filterKey) {
+  const isYearly = filterKey.length === 4;
   const monthOrders = orders.filter(order => {
     if (!order.createdAt) return false;
-    const orderMonth = order.createdAt.substring(0, 7);
-    return orderMonth === month;
+    const orderKey = isYearly ? order.createdAt.substring(0, 4) : order.createdAt.substring(0, 7);
+    return orderKey === filterKey;
   });
 
   const completedOrders = monthOrders.filter(o => o.status === 'completed');

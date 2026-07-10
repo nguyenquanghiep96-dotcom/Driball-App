@@ -14,59 +14,103 @@ export default function RevenuePage() {
   const [selectedYear, setSelectedYear] = useState(now.getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth()); // 0-indexed
 
-  const monthKey = `${selectedYear}-${String(selectedMonth + 1).padStart(2, '0')}`;
+  const [viewMode, setViewMode] = useState('month'); // 'month' or 'year'
+
+  const filterKey = viewMode === 'year' 
+    ? `${selectedYear}`
+    : `${selectedYear}-${String(selectedMonth + 1).padStart(2, '0')}`;
+
   const monthStats = useMemo(() =>
-    calculateMonthlyStats(state.orders, state.products, monthKey),
-    [state.orders, state.products, monthKey]
+    calculateMonthlyStats(state.orders, state.products, filterKey),
+    [state.orders, state.products, filterKey]
   );
 
-  const operatingCosts = state.operatingCosts[monthKey] || { advertising: 0, software: 0, other: 0 };
-  const totalOperating = Object.values(operatingCosts).reduce((sum, v) => sum + (Number(v) || 0), 0);
+  const operatingCosts = state.operatingCosts[filterKey] || { advertising: 0, software: 0, other: 0 };
+  const totalOperating = useMemo(() => {
+    if (viewMode === 'month') {
+      const costs = state.operatingCosts[filterKey] || { advertising: 0, software: 0, other: 0 };
+      return Object.values(costs).reduce((sum, v) => sum + (Number(v) || 0), 0);
+    } else {
+      let total = 0;
+      for (let i = 1; i <= 12; i++) {
+        const key = `${selectedYear}-${String(i).padStart(2, '0')}`;
+        const costs = state.operatingCosts[key];
+        if (costs) {
+          total += Object.values(costs).reduce((sum, v) => sum + (Number(v) || 0), 0);
+        }
+      }
+      return total;
+    }
+  }, [state.operatingCosts, filterKey, viewMode, selectedYear]);
+
   const netProfit = monthStats.totalProfit - totalOperating;
 
   // Month orders
   const monthOrders = useMemo(() => {
     return state.orders.filter(order => {
       if (!order.createdAt) return false;
-      return order.createdAt.substring(0, 7) === monthKey;
+      const orderKey = viewMode === 'year' ? order.createdAt.substring(0, 4) : order.createdAt.substring(0, 7);
+      return orderKey === filterKey;
     });
-  }, [state.orders, monthKey]);
+  }, [state.orders, filterKey, viewMode]);
 
-  // Chart data: last 6 months
+  // Chart data
   const chartData = useMemo(() => {
     const months = [];
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date(selectedYear, selectedMonth - i, 1);
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-      const stats = calculateMonthlyStats(state.orders, state.products, key);
-      const opCosts = state.operatingCosts[key] || { advertising: 0, software: 0, other: 0 };
-      const totalOp = Object.values(opCosts).reduce((s, v) => s + (Number(v) || 0), 0);
-      months.push({
-        label: `T${d.getMonth() + 1}`,
-        revenue: stats.totalRevenue,
-        profit: stats.totalProfit - totalOp,
-      });
+    if (viewMode === 'year') {
+      for (let i = 1; i <= 12; i++) {
+        const key = `${selectedYear}-${String(i).padStart(2, '0')}`;
+        const stats = calculateMonthlyStats(state.orders, state.products, key);
+        const opCosts = state.operatingCosts[key] || { advertising: 0, software: 0, other: 0 };
+        const totalOp = Object.values(opCosts).reduce((s, v) => s + (Number(v) || 0), 0);
+        months.push({
+          label: `T${i}`,
+          revenue: stats.totalRevenue,
+          profit: stats.totalProfit - totalOp,
+        });
+      }
+    } else {
+      for (let i = 5; i >= 0; i--) {
+        const d = new Date(selectedYear, selectedMonth - i, 1);
+        const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        const stats = calculateMonthlyStats(state.orders, state.products, key);
+        const opCosts = state.operatingCosts[key] || { advertising: 0, software: 0, other: 0 };
+        const totalOp = Object.values(opCosts).reduce((s, v) => s + (Number(v) || 0), 0);
+        months.push({
+          label: `T${d.getMonth() + 1}`,
+          revenue: stats.totalRevenue,
+          profit: stats.totalProfit - totalOp,
+        });
+      }
     }
     return months;
-  }, [state.orders, state.products, state.operatingCosts, selectedYear, selectedMonth]);
+  }, [state.orders, state.products, state.operatingCosts, selectedYear, selectedMonth, viewMode]);
 
   const maxChartValue = Math.max(...chartData.map(d => d.revenue), 1);
 
-  const prevMonth = () => {
-    if (selectedMonth === 0) {
-      setSelectedMonth(11);
+  const prevTime = () => {
+    if (viewMode === 'year') {
       setSelectedYear(prev => prev - 1);
     } else {
-      setSelectedMonth(prev => prev - 1);
+      if (selectedMonth === 0) {
+        setSelectedMonth(11);
+        setSelectedYear(prev => prev - 1);
+      } else {
+        setSelectedMonth(prev => prev - 1);
+      }
     }
   };
 
-  const nextMonth = () => {
-    if (selectedMonth === 11) {
-      setSelectedMonth(0);
+  const nextTime = () => {
+    if (viewMode === 'year') {
       setSelectedYear(prev => prev + 1);
     } else {
-      setSelectedMonth(prev => prev + 1);
+      if (selectedMonth === 11) {
+        setSelectedMonth(0);
+        setSelectedYear(prev => prev + 1);
+      } else {
+        setSelectedMonth(prev => prev + 1);
+      }
     }
   };
 
@@ -74,7 +118,7 @@ export default function RevenuePage() {
     dispatch({
       type: 'UPDATE_OPERATING_COSTS',
       payload: {
-        month: monthKey,
+        month: filterKey,
         costs: { ...operatingCosts, [field]: Number(value) || 0 },
       },
     });
@@ -88,20 +132,32 @@ export default function RevenuePage() {
       </div>
 
       <div className="page-content" style={{ paddingTop: 8 }}>
-        {/* Month Selector */}
+        {/* View Mode Toggle */}
+        <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
+          <button 
+            onClick={() => setViewMode('month')}
+            style={{ flex: 1, padding: '8px 0', borderRadius: 8, border: 'none', background: viewMode === 'month' ? 'var(--color-blue)' : 'var(--color-bg-secondary)', color: viewMode === 'month' ? '#fff' : 'var(--color-label)', fontWeight: 600, cursor: 'pointer' }}
+          >Theo tháng</button>
+          <button 
+            onClick={() => setViewMode('year')}
+            style={{ flex: 1, padding: '8px 0', borderRadius: 8, border: 'none', background: viewMode === 'year' ? 'var(--color-blue)' : 'var(--color-bg-secondary)', color: viewMode === 'year' ? '#fff' : 'var(--color-label)', fontWeight: 600, cursor: 'pointer' }}
+          >Cả năm</button>
+        </div>
+
+        {/* Time Selector */}
         <div className="flex-between" style={{
           background: 'var(--color-bg-secondary)',
           borderRadius: 'var(--radius-md)',
           padding: '10px 16px',
           marginBottom: 16,
         }}>
-          <button onClick={prevMonth} style={{ background: 'none', border: 'none', color: 'var(--color-blue)', cursor: 'pointer', padding: 4 }}>
+          <button onClick={prevTime} style={{ background: 'none', border: 'none', color: 'var(--color-blue)', cursor: 'pointer', padding: 4 }}>
             <ChevronLeft size={22} />
           </button>
           <span className="text-headline">
-            {MONTH_NAMES[selectedMonth]} {selectedYear}
+            {viewMode === 'year' ? `Năm ${selectedYear}` : `${MONTH_NAMES[selectedMonth]} ${selectedYear}`}
           </span>
-          <button onClick={nextMonth} style={{ background: 'none', border: 'none', color: 'var(--color-blue)', cursor: 'pointer', padding: 4 }}>
+          <button onClick={nextTime} style={{ background: 'none', border: 'none', color: 'var(--color-blue)', cursor: 'pointer', padding: 4 }}>
             <ChevronRight size={22} />
           </button>
         </div>
@@ -129,7 +185,7 @@ export default function RevenuePage() {
         {/* Chart */}
         <div className="chart-container">
           <div className="text-subheadline" style={{ fontWeight: 600, marginBottom: 4 }}>
-            Biểu đồ 6 tháng
+            Biểu đồ {viewMode === 'year' ? '12 tháng' : '6 tháng'}
           </div>
           <div style={{ display: 'flex', gap: 12, marginBottom: 8 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -161,46 +217,48 @@ export default function RevenuePage() {
         </div>
 
         {/* Operating Costs */}
-        <div className="list-section">
-          <div className="list-section-header">Chi phí vận hành tháng</div>
-          <div className="list-group">
-            <div className="form-row">
-              <label>Quảng cáo</label>
-              <input
-                type="number"
-                placeholder="0"
-                value={operatingCosts.advertising || ''}
-                onChange={e => updateOperatingCost('advertising', e.target.value)}
-              />
-            </div>
-            <div className="form-row">
-              <label>Ứng dụng/PM</label>
-              <input
-                type="number"
-                placeholder="0"
-                value={operatingCosts.software || ''}
-                onChange={e => updateOperatingCost('software', e.target.value)}
-              />
-            </div>
-            <div className="form-row">
-              <label>Chi phí khác</label>
-              <input
-                type="number"
-                placeholder="0"
-                value={operatingCosts.other || ''}
-                onChange={e => updateOperatingCost('other', e.target.value)}
-              />
-            </div>
-            <div className="list-item" style={{ background: 'var(--color-bg-tertiary)' }}>
-              <span style={{ fontWeight: 600 }}>Tổng chi phí VH</span>
-              <span style={{ fontWeight: 700, color: 'var(--color-orange)' }}>{formatCurrency(totalOperating)}</span>
+        {viewMode === 'month' && (
+          <div className="list-section">
+            <div className="list-section-header">Chi phí vận hành tháng</div>
+            <div className="list-group">
+              <div className="form-row">
+                <label>Quảng cáo</label>
+                <input
+                  type="number"
+                  placeholder="0"
+                  value={operatingCosts.advertising || ''}
+                  onChange={e => updateOperatingCost('advertising', e.target.value)}
+                />
+              </div>
+              <div className="form-row">
+                <label>Ứng dụng/PM</label>
+                <input
+                  type="number"
+                  placeholder="0"
+                  value={operatingCosts.software || ''}
+                  onChange={e => updateOperatingCost('software', e.target.value)}
+                />
+              </div>
+              <div className="form-row">
+                <label>Chi phí khác</label>
+                <input
+                  type="number"
+                  placeholder="0"
+                  value={operatingCosts.other || ''}
+                  onChange={e => updateOperatingCost('other', e.target.value)}
+                />
+              </div>
+              <div className="list-item" style={{ background: 'var(--color-bg-tertiary)' }}>
+                <span style={{ fontWeight: 600 }}>Tổng chi phí VH</span>
+                <span style={{ fontWeight: 700, color: 'var(--color-orange)' }}>{formatCurrency(totalOperating)}</span>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Revenue Breakdown */}
         <div className="list-section">
-          <div className="list-section-header">Tổng kết tháng</div>
+          <div className="list-section-header">Tổng kết {viewMode === 'year' ? 'năm' : 'tháng'}</div>
           <div className="list-group">
             <div className="list-item">
               <span className="list-item-label">Doanh thu</span>
@@ -225,8 +283,8 @@ export default function RevenuePage() {
 
         {/* Monthly Orders List */}
         {monthOrders.length > 0 && (
-          <div className="list-section">
-            <div className="list-section-header">Đơn hàng trong tháng ({monthOrders.length})</div>
+          <div className="list-section" style={{ paddingBottom: 32 }}>
+            <div className="list-section-header">Đơn hàng trong {viewMode === 'year' ? 'năm' : 'tháng'} ({monthOrders.length})</div>
             <div className="list-group">
               {monthOrders.map(order => {
                 const product = state.products.find(p => p.id === order.productId);

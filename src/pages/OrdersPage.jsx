@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Search, Package, Calendar } from 'lucide-react';
 import { useApp } from '../context/AppContext';
@@ -23,6 +23,17 @@ export default function OrdersPage() {
   const [yearPickerOpen, setYearPickerOpen] = useState(false);
 
   const MONTHS = Array.from({ length: 12 }, (_, i) => (i + 1).toString().padStart(2, '0'));
+
+  const scrollRef = useRef(null);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      const activeBtn = scrollRef.current.querySelector('.filter-pill.active');
+      if (activeBtn) {
+        activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
+      }
+    }
+  }, []);
 
   const selectedMonthPrefix = `${selectedYear}-${selectedMonth}`;
 
@@ -98,7 +109,7 @@ export default function OrdersPage() {
       </div>
 
       {/* Month Picker */}
-      <div className="filter-scroll" style={{ paddingTop: 0, paddingBottom: 16 }}>
+      <div className="filter-scroll" style={{ paddingTop: 0, paddingBottom: 16 }} ref={scrollRef}>
         {MONTHS.map(m => {
           return (
             <button
@@ -116,20 +127,20 @@ export default function OrdersPage() {
       {/* Stats Summary */}
       <div className="page-content">
         <div className="stats-grid">
-          <div className="stat-card accent-blue">
-            <div className="stat-card-value">{monthStats.totalOrders}</div>
-            <div className="stat-card-label">Tổng đơn</div>
+          <div className="stat-card accent-green">
+            <div className="stat-card-value" style={{ color: '#ffffff' }}>{formatCompact(monthStats.totalRevenue)}</div>
+            <div className="stat-card-label">Doanh thu</div>
           </div>
           <div className="stat-card accent-orange">
-            <div className="stat-card-value">{formatCompact(monthStats.totalProfit)}</div>
-            <div className="stat-card-label">Lợi nhuận ròng</div>
+            <div className="stat-card-value" style={{ color: '#ffffff' }}>{formatCompact(monthStats.totalProfit)}</div>
+            <div className="stat-card-label">Lợi nhuận</div>
           </div>
-          <div className="stat-card accent-green">
-            <div className="stat-card-value">{formatCompact(monthStats.totalRevenue)}</div>
-            <div className="stat-card-label">Doanh thu tháng</div>
+          <div className="stat-card accent-blue">
+            <div className="stat-card-value" style={{ color: '#ffffff' }}>{monthStats.totalOrders}</div>
+            <div className="stat-card-label">Tổng đơn</div>
           </div>
           <div className="stat-card accent-purple">
-            <div className="stat-card-value">{monthStats.completedCount}</div>
+            <div className="stat-card-value" style={{ color: '#ffffff' }}>{monthStats.completedCount}</div>
             <div className="stat-card-label">Hoàn thành</div>
           </div>
         </div>
