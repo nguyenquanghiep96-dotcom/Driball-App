@@ -11,14 +11,18 @@ export default function App() {
   return (
     <AppProvider>
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<OrdersPage />} />
-          <Route path="/create" element={<CreateOrderPage />} />
-          <Route path="/order/:id" element={<OrderDetailPage />} />
-          <Route path="/products" element={<ProductsPage />} />
-          <Route path="/revenue" element={<RevenuePage />} />
-        </Routes>
-        <BottomNav />
+        <div className="app-layout">
+          <BottomNav />
+          <div className="app-main">
+            <Routes>
+              <Route path="/" element={<OrdersPage />} />
+              <Route path="/create" element={<CreateOrderPage />} />
+              <Route path="/order/:id" element={<OrderDetailPage />} />
+              <Route path="/products" element={<ProductsPage />} />
+              <Route path="/revenue" element={<RevenuePage />} />
+            </Routes>
+          </div>
+        </div>
       </BrowserRouter>
     </AppProvider>
   );
