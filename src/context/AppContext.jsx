@@ -2,6 +2,7 @@ import { createContext, useContext, useReducer, useEffect, useState } from 'reac
 import { DEFAULT_PRODUCTS, PRINT_PACKAGES, DEFAULT_BRAND_COSTS } from '../utils/constants';
 import { generateId, getToday } from '../utils/calculations';
 import * as db from '../lib/supabaseService';
+import { TextShimmer } from '../components/TextShimmer';
 
 const AppContext = createContext();
 
@@ -171,16 +172,10 @@ export function AppProvider({ children }) {
         height: '100vh', background: 'var(--color-bg)',
         color: 'var(--color-label-secondary)',
         fontFamily: 'var(--font-family)',
-        flexDirection: 'column', gap: 12,
       }}>
-        <div style={{
-          width: 32, height: 32, borderRadius: '50%',
-          border: '3px solid var(--color-bg-tertiary)',
-          borderTopColor: 'var(--color-blue)',
-          animation: 'spin 0.8s linear infinite',
-        }} />
-        <span style={{ fontSize: 14 }}>Đang tải dữ liệu...</span>
-        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+        <TextShimmer style={{ fontSize: 24, fontWeight: 600 }}>
+          Xin chào!
+        </TextShimmer>
       </div>
     );
   }
