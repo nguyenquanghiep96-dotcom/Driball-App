@@ -58,8 +58,7 @@ export default function OrdersPage() {
       .reduce((sum, order) => {
         const product = state.products.find(p => p.id === order.productId);
         if (product) {
-          const printCost = Number(order.printCost) || Number(order.printPackagePrice) || 0;
-          return sum + calculateOrderTotal(product, printCost, order.quantity);
+          return sum + calculateOrderTotal(order, product);
         }
         return sum;
       }, 0);
