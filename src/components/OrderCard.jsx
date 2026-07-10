@@ -21,14 +21,14 @@ export default function OrderCard({ order }) {
   const totalPrintCost = printCost + logo3dCost;
 
   const total = product
-    ? calculateOrderTotal(product, totalPrintCost, order.quantity)
+    ? calculateOrderTotal(order, product)
     : 0;
   const profit = product
-    ? calculateOrderProfit(product, totalPrintCost, order.quantity)
+    ? calculateOrderProfit(order, product)
     : 0;
   const deliveryDate = calculateDeliveryDate(order.depositDate);
   const tc = TAG_COLORS[product?.tag] || { bg: 'rgba(142,142,147,0.15)', color: '#8e8e93' };
-  const unitPrice = product ? getPriceByQuantity(product, order.quantity) : 0;
+  const unitPrice = order.snapshotUnitPrice ?? (order.overrideUnitPrice !== null && order.overrideUnitPrice !== undefined ? order.overrideUnitPrice : (product ? getPriceByQuantity(product, order.quantity) : 0));
   const colors = product?.colors || [];
   const colorObj = colors.find(c => c.id === order.colorId) || colors[0];
   const thumb = colorObj?.thumbnail || '';

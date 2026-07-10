@@ -57,11 +57,11 @@ export default function OrderDetailPage() {
   const outsourceCost = Number(order.outsourceCost) || printCost;
   const totalPrintCost = printCost + logo3dCost;
   const baseUnitPrice = product ? getPriceByQuantity(product, order.quantity) : 0;
-  const unitPrice = order.overrideUnitPrice != null ? Number(order.overrideUnitPrice) : baseUnitPrice;
+  const unitPrice = order.snapshotUnitPrice ?? (order.overrideUnitPrice != null ? Number(order.overrideUnitPrice) : baseUnitPrice);
   const unitAfterPrint = unitPrice + totalPrintCost;
   const total = unitAfterPrint * order.quantity;
   const baseProdCost = product ? calculateProductionCost(product) : 0;
-  const prodCost = order.overrideProdCost != null ? Number(order.overrideProdCost) : baseProdCost;
+  const prodCost = order.snapshotProdCost ?? (order.overrideProdCost != null ? Number(order.overrideProdCost) : baseProdCost);
   const profitPerUnit = unitAfterPrint - prodCost - outsourceCost;
   const totalProfit = profitPerUnit * order.quantity;
   const deliveryDate = calculateDeliveryDate(order.depositDate);
@@ -88,6 +88,12 @@ export default function OrderDetailPage() {
   };
 
   const saveEdit = () => {
+    const editProduct = state.products.find(p => p.id === editForm.productId);
+    const editBaseUnitPrice = editProduct ? getPriceByQuantity(editProduct, editForm.quantity) : 0;
+    const editUnitPrice = editForm.overrideUnitPrice !== null ? Number(editForm.overrideUnitPrice) : editBaseUnitPrice;
+    const editBaseProdCost = editProduct ? calculateProductionCost(editProduct) : 0;
+    const editProdCost = editForm.overrideProdCost !== null ? Number(editForm.overrideProdCost) : editBaseProdCost;
+
     dispatch({
       type: 'UPDATE_ORDER',
       payload: {
@@ -99,6 +105,8 @@ export default function OrderDetailPage() {
         outsourceCost: Number(editForm.outsourceCost) || 0,
         overrideUnitPrice: editForm.overrideUnitPrice,
         overrideProdCost: editForm.overrideProdCost,
+        snapshotUnitPrice: editUnitPrice,
+        snapshotProdCost: editProdCost,
       },
     });
     setIsEditing(false);

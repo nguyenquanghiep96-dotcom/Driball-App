@@ -231,7 +231,7 @@ export default function RevenuePage() {
               {monthOrders.map(order => {
                 const product = state.products.find(p => p.id === order.productId);
                 const printPkg = state.printPackages.find(p => p.id === order.printPackageId);
-                const orderTotal = product ? calculateOrderTotal(product, printPkg?.price || 0, order.quantity) : 0;
+                const orderTotal = product ? calculateOrderTotal(order, product) : 0;
                 return (
                   <div className="list-item" key={order.id} style={{ flexDirection: 'column', alignItems: 'stretch', gap: 4, padding: '12px 16px' }}>
                     <div className="flex-between">

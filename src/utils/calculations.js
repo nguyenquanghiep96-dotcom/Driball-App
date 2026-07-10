@@ -50,18 +50,24 @@ export function getPriceByQuantity(product, quantity) {
 /**
  * Calculate order total = (selling price + print package) × quantity
  */
-export function calculateOrderTotal(product, printPackagePrice, quantity) {
-  const unitPrice = getPriceByQuantity(product, quantity);
-  return (unitPrice + (printPackagePrice || 0)) * quantity;
+export function calculateOrderTotal(order, product) {
+  const quantity = order.quantity || 1;
+  const unitPrice = order.snapshotUnitPrice ?? (order.overrideUnitPrice !== null && order.overrideUnitPrice !== undefined ? order.overrideUnitPrice : getPriceByQuantity(product, quantity));
+  const printCost = Number(order.printCost) || Number(order.printPackagePrice) || 0;
+  const logo3dCost = Number(order.logo3dCost) || 0;
+  return (unitPrice + printCost + logo3dCost) * quantity;
 }
 
 /**
  * Calculate profit for an order
  */
-export function calculateOrderProfit(product, printPackagePrice, quantity) {
-  const revenue = calculateOrderTotal(product, printPackagePrice, quantity);
-  const cost = calculateProductionCost(product) * quantity;
-  return revenue - cost;
+export function calculateOrderProfit(order, product) {
+  const revenue = calculateOrderTotal(order, product);
+  const quantity = order.quantity || 1;
+  const prodCost = order.snapshotProdCost ?? (order.overrideProdCost !== null && order.overrideProdCost !== undefined ? order.overrideProdCost : calculateProductionCost(product));
+  const outsourceCost = Number(order.outsourceCost) || 0;
+  const totalCost = (prodCost + outsourceCost) * quantity;
+  return revenue - totalCost;
 }
 
 /**
@@ -137,8 +143,8 @@ export function calculateMonthlyStats(orders, products, month) {
   completedOrders.forEach(order => {
     const product = products.find(p => p.id === order.productId);
     if (product) {
-      totalRevenue += calculateOrderTotal(product, order.printPackagePrice, order.quantity);
-      totalProfit += calculateOrderProfit(product, order.printPackagePrice, order.quantity);
+      totalRevenue += calculateOrderTotal(order, product);
+      totalProfit += calculateOrderProfit(order, product);
       totalQuantity += order.quantity;
     }
   });

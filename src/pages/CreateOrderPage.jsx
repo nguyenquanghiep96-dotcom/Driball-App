@@ -98,6 +98,8 @@ export default function CreateOrderPage() {
         outsourceCost,
         overrideUnitPrice: form.overrideUnitPrice,
         overrideProdCost: form.overrideProdCost,
+        snapshotUnitPrice: unitPrice,
+        snapshotProdCost: prodCost,
       },
     });
     navigate('/');
