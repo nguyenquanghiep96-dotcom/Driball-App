@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, Trash2, Image, Check, ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronLeft, Trash2, Image, Check, ChevronDown, ChevronUp, ChevronRight } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { STATUSES } from '../utils/constants';
 import StatusBadge from '../components/StatusBadge';
 import { SourceIcon, SourcePicker } from '../components/SourceIcon';
-import { formatCurrency, formatDate, calculateOrderTotal, calculateOrderProfit, calculateProductionCost, calculateDeliveryDate, getPriceByQuantity } from '../utils/calculations';
+import { formatCurrency, formatCompact, formatDate, calculateOrderTotal, calculateOrderProfit, calculateProductionCost, calculateDeliveryDate, getPriceByQuantity } from '../utils/calculations';
 
 function MoneyInput({ value, onChange, placeholder, style }) {
   const [isFocused, setIsFocused] = useState(false);
@@ -35,6 +35,8 @@ export default function OrderDetailPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState(null);
   const [editPickerOpen, setEditPickerOpen] = useState(false);
+  const [showProfitDetails, setShowProfitDetails] = useState(false);
+  const [showTimeDetails, setShowTimeDetails] = useState(false);
 
   if (!order) {
     return (
@@ -703,26 +705,67 @@ export default function OrderDetailPage() {
         <div className="list-section">
           <div className="list-section-header">Lợi nhuận</div>
           <div className="list-group">
-            <div className="list-item">
-              <span className="list-item-label">Giá vốn sản phẩm{order.overrideProdCost != null ? ' ✧' : ''}</span>
-              <span className="list-item-value" style={order.overrideProdCost != null ? { color: 'var(--color-orange)' } : undefined}>{formatCurrency(prodCost)}/bộ</span>
-            </div>
-            <div className="list-item">
-              <span className="list-item-label">Chi phí thuê in ấn</span>
-              <span className="list-item-value">{formatCurrency(outsourceCost)}/bộ</span>
-            </div>
-            <div className="list-item">
-              <span className="list-item-label">Lợi nhuận/bộ</span>
-              <span className="list-item-value" style={{ fontWeight: 600, color: profitPerUnit >= 0 ? 'var(--color-green)' : 'var(--color-red)' }}>
-                {profitPerUnit >= 0 ? '+' : ''}{formatCurrency(profitPerUnit)}
-              </span>
-            </div>
-            <div className="list-item">
-              <span className="list-item-label" style={{ fontWeight: 600 }}>Tổng lợi nhuận</span>
-              <span className="list-item-value" style={{ fontWeight: 700, color: totalProfit >= 0 ? 'var(--color-green)' : 'var(--color-red)' }}>
-                {totalProfit >= 0 ? '+' : ''}{formatCurrency(totalProfit)}
-              </span>
-            </div>
+            {!showProfitDetails ? (
+              <div 
+                className="list-item" 
+                onClick={() => setShowProfitDetails(true)} 
+                style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'stretch' }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span className="list-item-label" style={{ fontWeight: 600 }}>Tổng lợi nhuận</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                    <span className="list-item-value" style={{ fontWeight: 700, color: totalProfit >= 0 ? 'var(--color-green)' : 'var(--color-red)' }}>
+                      {totalProfit >= 0 ? '+' : ''}{formatCurrency(totalProfit)}
+                    </span>
+                    <ChevronRight size={16} color="var(--color-label-tertiary)" />
+                  </div>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                    <span style={{ fontSize: 11, color: 'var(--color-label-secondary)' }}>Lợi nhuận/bộ</span>
+                    <span style={{ fontSize: 13, fontWeight: 500, color: profitPerUnit >= 0 ? 'var(--color-green)' : 'var(--color-red)' }}>{profitPerUnit >= 0 ? '+' : ''}{formatCompact(profitPerUnit)}</span>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <span style={{ fontSize: 11, color: 'var(--color-label-secondary)' }}>Giá vốn SP</span>
+                    <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-label)' }}>{formatCompact(prodCost)}</span>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                    <span style={{ fontSize: 11, color: 'var(--color-label-secondary)' }}>Thuê in ấn</span>
+                    <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-label)' }}>{formatCompact(outsourceCost)}</span>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div 
+                  className="list-item" 
+                  onClick={() => setShowProfitDetails(false)} 
+                  style={{ cursor: 'pointer', background: 'var(--color-bg-secondary)', justifyContent: 'center' }}
+                >
+                  <span style={{ color: 'var(--color-blue)', fontSize: 14, fontWeight: 500 }}>Đóng chi tiết lợi nhuận</span>
+                </div>
+                <div className="list-item">
+                  <span className="list-item-label">Giá vốn sản phẩm{order.overrideProdCost != null ? ' ✧' : ''}</span>
+                  <span className="list-item-value" style={order.overrideProdCost != null ? { color: 'var(--color-orange)' } : undefined}>{formatCurrency(prodCost)}/bộ</span>
+                </div>
+                <div className="list-item">
+                  <span className="list-item-label">Chi phí thuê in ấn</span>
+                  <span className="list-item-value">{formatCurrency(outsourceCost)}/bộ</span>
+                </div>
+                <div className="list-item">
+                  <span className="list-item-label">Lợi nhuận/bộ</span>
+                  <span className="list-item-value" style={{ fontWeight: 600, color: profitPerUnit >= 0 ? 'var(--color-green)' : 'var(--color-red)' }}>
+                    {profitPerUnit >= 0 ? '+' : ''}{formatCurrency(profitPerUnit)}
+                  </span>
+                </div>
+                <div className="list-item">
+                  <span className="list-item-label" style={{ fontWeight: 600 }}>Tổng lợi nhuận</span>
+                  <span className="list-item-value" style={{ fontWeight: 700, color: totalProfit >= 0 ? 'var(--color-green)' : 'var(--color-red)' }}>
+                    {totalProfit >= 0 ? '+' : ''}{formatCurrency(totalProfit)}
+                  </span>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
@@ -730,20 +773,45 @@ export default function OrderDetailPage() {
         <div className="list-section">
           <div className="list-section-header">Thời gian</div>
           <div className="list-group">
-            <div className="list-item">
-              <span className="list-item-label">Ngày tạo</span>
-              <span className="list-item-value">{formatDate(order.createdAt)}</span>
-            </div>
-            <div className="list-item">
-              <span className="list-item-label">Ngày cọc</span>
-              <span className="list-item-value">{formatDate(order.depositDate)}</span>
-            </div>
-            <div className="list-item">
-              <span className="list-item-label">Giao dự kiến</span>
-              <span className="list-item-value" style={{ color: 'var(--color-green)' }}>
-                {deliveryDate ? formatDate(deliveryDate) : '—'}
-              </span>
-            </div>
+            {!showTimeDetails ? (
+              <div 
+                className="list-item" 
+                onClick={() => setShowTimeDetails(true)} 
+                style={{ cursor: 'pointer' }}
+              >
+                <span className="list-item-label">Ngày giao dự kiến</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span className="list-item-value" style={{ color: 'var(--color-green)' }}>
+                    {deliveryDate ? formatDate(deliveryDate) : '—'}
+                  </span>
+                  <ChevronRight size={16} color="var(--color-label-tertiary)" />
+                </div>
+              </div>
+            ) : (
+              <>
+                <div 
+                  className="list-item" 
+                  onClick={() => setShowTimeDetails(false)} 
+                  style={{ cursor: 'pointer', background: 'var(--color-bg-secondary)', justifyContent: 'center' }}
+                >
+                  <span style={{ color: 'var(--color-blue)', fontSize: 14, fontWeight: 500 }}>Đóng chi tiết thời gian</span>
+                </div>
+                <div className="list-item">
+                  <span className="list-item-label">Ngày tạo</span>
+                  <span className="list-item-value">{formatDate(order.createdAt)}</span>
+                </div>
+                <div className="list-item">
+                  <span className="list-item-label">Ngày cọc</span>
+                  <span className="list-item-value">{formatDate(order.depositDate)}</span>
+                </div>
+                <div className="list-item">
+                  <span className="list-item-label">Giao dự kiến</span>
+                  <span className="list-item-value" style={{ color: 'var(--color-green)' }}>
+                    {deliveryDate ? formatDate(deliveryDate) : '—'}
+                  </span>
+                </div>
+              </>
+            )}
           </div>
         </div>
 

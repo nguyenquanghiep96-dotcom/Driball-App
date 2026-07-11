@@ -61,7 +61,9 @@ export default function OrdersPage() {
     return calculateMonthlyStats(state.orders, state.products, selectedMonthPrefix);
   }, [state.orders, state.products, selectedMonthPrefix]);
 
-
+  const operatingCosts = state.operatingCosts[selectedMonthPrefix] || { advertising: 0, software: 0, other: 0 };
+  const totalOperating = Object.values(operatingCosts).reduce((sum, v) => sum + (Number(v) || 0), 0);
+  const netProfit = monthStats.totalProfit - totalOperating;
 
   return (
     <div className="page">
@@ -132,8 +134,8 @@ export default function OrdersPage() {
             <div className="stat-card-label">Doanh thu</div>
           </div>
           <div className="stat-card accent-orange">
-            <div className="stat-card-value" style={{ color: '#ffffff' }}>{formatCompact(monthStats.totalProfit)}</div>
-            <div className="stat-card-label">Lợi nhuận</div>
+            <div className="stat-card-value" style={{ color: '#ffffff' }}>{formatCompact(netProfit)}</div>
+            <div className="stat-card-label">Lợi nhuận ròng</div>
           </div>
           <div className="stat-card accent-blue">
             <div className="stat-card-value" style={{ color: '#ffffff' }}>{monthStats.totalOrders}</div>
