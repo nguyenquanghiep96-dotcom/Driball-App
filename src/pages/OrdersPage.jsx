@@ -18,9 +18,14 @@ export default function OrdersPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const currentMonthStr = getCurrentMonth(); // 'YYYY-MM'
   const [currentY, currentM] = currentMonthStr.split('-');
-  const [selectedYear, setSelectedYear] = useState(currentY);
-  const [selectedMonth, setSelectedMonth] = useState(currentM); // '01' to '12'
+  const [selectedYear, setSelectedYear] = useState(() => sessionStorage.getItem('driball_orders_year') || currentY);
+  const [selectedMonth, setSelectedMonth] = useState(() => sessionStorage.getItem('driball_orders_month') || currentM); // '01' to '12'
   const [yearPickerOpen, setYearPickerOpen] = useState(false);
+
+  useEffect(() => {
+    sessionStorage.setItem('driball_orders_year', selectedYear);
+    sessionStorage.setItem('driball_orders_month', selectedMonth);
+  }, [selectedYear, selectedMonth]);
 
   const MONTHS = Array.from({ length: 12 }, (_, i) => (i + 1).toString().padStart(2, '0'));
 
@@ -54,7 +59,12 @@ export default function OrdersPage() {
         o.customerName?.toLowerCase().includes(q)
       );
     }
-    return orders;
+    return [...orders].sort((a, b) => {
+      const aCompleted = a.status === 'completed' ? 1 : 0;
+      const bCompleted = b.status === 'completed' ? 1 : 0;
+      if (aCompleted !== bCompleted) return aCompleted - bCompleted;
+      return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+    });
   }, [selectedMonthOrders, activeFilter, searchQuery]);
 
   const monthStats = useMemo(() => {
@@ -101,10 +111,10 @@ export default function OrdersPage() {
               </div>
             )}
             <button
-              className="header-action"
               onClick={() => navigate('/create')}
+              style={{ fontWeight: 600, padding: '6px 12px', background: 'var(--color-blue)', color: '#fff', borderRadius: 8, border: 'none', cursor: 'pointer' }}
             >
-              <Plus size={22} />
+              Tạo đơn
             </button>
           </div>
         </div>

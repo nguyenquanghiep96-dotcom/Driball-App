@@ -14,7 +14,7 @@ export function formatCurrency(amount) {
 export function formatCompact(amount) {
   if (amount == null || isNaN(amount)) return '0đ';
   if (amount >= 1000000) {
-    return (amount / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+    return (amount / 1000000).toFixed(1).replace(/\.0$/, '') + 'tr';
   }
   if (amount >= 1000) {
     return (amount / 1000).toFixed(0) + 'K';
@@ -87,8 +87,8 @@ export function formatDate(dateStr) {
   if (!dateStr) return '—';
   const date = new Date(dateStr);
   return date.toLocaleDateString('vi-VN', {
-    day: '2-digit',
-    month: '2-digit',
+    day: 'numeric',
+    month: 'short',
     year: 'numeric',
   });
 }

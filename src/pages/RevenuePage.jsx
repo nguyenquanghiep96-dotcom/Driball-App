@@ -8,6 +8,25 @@ import {
 import { MONTH_NAMES } from '../utils/constants';
 import StatusBadge from '../components/StatusBadge';
 
+function MoneyInput({ value, onChange, placeholder, style }) {
+  const [isFocused, setIsFocused] = useState(false);
+  const displayValue = isFocused
+    ? (value || '')
+    : (value ? new Intl.NumberFormat('en-US').format(value) + 'đ' : '');
+  return (
+    <input
+      type={isFocused ? 'number' : 'text'}
+      inputMode="numeric"
+      value={displayValue}
+      placeholder={placeholder || '0'}
+      onFocus={() => setIsFocused(true)}
+      onBlur={() => setIsFocused(false)}
+      onChange={e => onChange(e.target.value)}
+      style={style}
+    />
+  );
+}
+
 export default function RevenuePage() {
   const { state, dispatch } = useApp();
   const now = new Date();
@@ -223,29 +242,29 @@ export default function RevenuePage() {
             <div className="list-group">
               <div className="form-row">
                 <label>Quảng cáo</label>
-                <input
-                  type="number"
+                <MoneyInput
                   placeholder="0"
                   value={operatingCosts.advertising || ''}
-                  onChange={e => updateOperatingCost('advertising', e.target.value)}
+                  onChange={v => updateOperatingCost('advertising', v)}
+                  style={{ textAlign: 'right' }}
                 />
               </div>
               <div className="form-row">
                 <label>Ứng dụng/PM</label>
-                <input
-                  type="number"
+                <MoneyInput
                   placeholder="0"
                   value={operatingCosts.software || ''}
-                  onChange={e => updateOperatingCost('software', e.target.value)}
+                  onChange={v => updateOperatingCost('software', v)}
+                  style={{ textAlign: 'right' }}
                 />
               </div>
               <div className="form-row">
                 <label>Chi phí khác</label>
-                <input
-                  type="number"
+                <MoneyInput
                   placeholder="0"
                   value={operatingCosts.other || ''}
-                  onChange={e => updateOperatingCost('other', e.target.value)}
+                  onChange={v => updateOperatingCost('other', v)}
+                  style={{ textAlign: 'right' }}
                 />
               </div>
               <div className="list-item" style={{ background: 'var(--color-bg-tertiary)' }}>

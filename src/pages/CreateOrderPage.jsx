@@ -74,9 +74,10 @@ export default function CreateOrderPage() {
   const updateField = (field, value) => {
     setForm(prev => {
       const next = { ...prev, [field]: value };
-      // Auto-sync outsourceCost when printCost changes
-      if (field === 'printCost') {
-        next.outsourceCost = value;
+      if (field === 'printCost' || field === 'logo3dCost') {
+        const pC = field === 'printCost' ? Number(value) : Number(prev.printCost);
+        const lC = field === 'logo3dCost' ? Number(value) : Number(prev.logo3dCost);
+        next.outsourceCost = (pC || 0) + (lC || 0);
       }
       return next;
     });
@@ -155,6 +156,7 @@ export default function CreateOrderPage() {
               type="date"
               value={form.createdAt ? form.createdAt.substring(0, 10) : ''}
               onChange={e => updateField('createdAt', e.target.value)}
+              style={{ textAlign: 'right' }}
             />
           </div>
         </div>
@@ -437,7 +439,7 @@ export default function CreateOrderPage() {
             </span>
           </div>
           <div className="form-row">
-            <label>Chi phí thuê in ấn</label>
+            <label>Chi phí in ấn</label>
             <MoneyInput
               value={form.outsourceCost}
               onChange={v => updateField('outsourceCost', v)}
@@ -476,6 +478,7 @@ export default function CreateOrderPage() {
               type="date"
               value={form.depositDate}
               onChange={e => updateField('depositDate', e.target.value)}
+              style={{ textAlign: 'right' }}
             />
           </div>
           <div className="form-row">

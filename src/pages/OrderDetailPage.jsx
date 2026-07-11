@@ -192,8 +192,10 @@ export default function OrderDetailPage() {
     const updateEditField = (field, value) => {
       setEditForm(prev => {
         const next = { ...prev, [field]: value };
-        if (field === 'printCost') {
-          next.outsourceCost = value;
+        if (field === 'printCost' || field === 'logo3dCost') {
+          const pC = field === 'printCost' ? Number(value) : Number(prev.printCost);
+          const lC = field === 'logo3dCost' ? Number(value) : Number(prev.logo3dCost);
+          next.outsourceCost = (pC || 0) + (lC || 0);
         }
         return next;
       });
@@ -240,6 +242,7 @@ export default function OrderDetailPage() {
                 type="date"
                 value={editForm.createdAt ? editForm.createdAt.substring(0, 10) : ''}
                 onChange={e => updateEditField('createdAt', e.target.value)}
+                style={{ textAlign: 'right' }}
               />
             </div>
           </div>
@@ -468,7 +471,7 @@ export default function OrderDetailPage() {
               </span>
             </div>
             <div className="form-row">
-              <label>Chi phí thuê in ấn</label>
+              <label>Chi phí in ấn</label>
               <MoneyInput value={editForm.outsourceCost} onChange={v => updateEditField('outsourceCost', v)} style={{ width: 120 }} />
             </div>
             <div className="form-row">
@@ -502,6 +505,7 @@ export default function OrderDetailPage() {
                 type="date"
                 value={editForm.depositDate || ''}
                 onChange={e => updateEditField('depositDate', e.target.value)}
+                style={{ textAlign: 'right' }}
               />
             </div>
             <div className="form-row">
@@ -730,7 +734,7 @@ export default function OrderDetailPage() {
                     <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-label)' }}>{formatCompact(prodCost)}</span>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                    <span style={{ fontSize: 11, color: 'var(--color-label-secondary)' }}>Thuê in ấn</span>
+                    <span style={{ fontSize: 11, color: 'var(--color-label-secondary)' }}>Chi phí in ấn</span>
                     <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-label)' }}>{formatCompact(outsourceCost)}</span>
                   </div>
                 </div>
@@ -749,7 +753,7 @@ export default function OrderDetailPage() {
                   <span className="list-item-value" style={order.overrideProdCost != null ? { color: 'var(--color-orange)' } : undefined}>{formatCurrency(prodCost)}/bộ</span>
                 </div>
                 <div className="list-item">
-                  <span className="list-item-label">Chi phí thuê in ấn</span>
+                  <span className="list-item-label">Chi phí in ấn</span>
                   <span className="list-item-value">{formatCurrency(outsourceCost)}/bộ</span>
                 </div>
                 <div className="list-item">

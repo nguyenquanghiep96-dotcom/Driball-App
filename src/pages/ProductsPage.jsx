@@ -212,7 +212,7 @@ function ProductEditor({ product, onSave, onCancel }) {
         <div className="form-row"><label>Tem mác + Bao bì</label><MoneyInput value={form.production.labelPackaging} onChange={v => updateProduction('labelPackaging', v)} /></div>
         <div className="form-row"><label>Ship</label><MoneyInput value={form.production.shipping} onChange={v => updateProduction('shipping', v)} /></div>
         <div className="form-row"><label>Chi phí khác</label><MoneyInput value={form.production.otherCosts} onChange={v => updateProduction('otherCosts', v)} /></div>
-        <div className="form-row"><label>Tổng giá sản xuất</label><span style={{ fontWeight: 600, color: 'var(--color-blue)' }}>{formatCurrency(totalCost)}</span></div>
+        <div className="form-row"><label>Tổng giá sản xuất</label><span style={{ marginLeft: 'auto', fontWeight: 600, color: 'var(--color-blue)' }}>{formatCurrency(totalCost)}</span></div>
       </div>
 
       <div className="form-label">Giá bán</div>
@@ -362,7 +362,12 @@ export default function ProductsPage() {
       <div className="page-header">
         <div className="header-row">
           <h1 className="text-large-title">Sản phẩm</h1>
-          <button className="header-action" onClick={() => setIsAdding(true)}><Plus size={22} /></button>
+          <button
+            onClick={() => setIsAdding(true)}
+            style={{ fontWeight: 600, padding: '6px 12px', background: 'var(--color-blue)', color: '#fff', borderRadius: 8, border: 'none', cursor: 'pointer' }}
+          >
+            Thêm sản phẩm
+          </button>
         </div>
       </div>
 
