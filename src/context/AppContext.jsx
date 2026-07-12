@@ -2,6 +2,7 @@ import { createContext, useContext, useReducer, useEffect, useState } from 'reac
 import { DEFAULT_PRODUCTS, PRINT_PACKAGES, DEFAULT_BRAND_COSTS } from '../utils/constants';
 import { generateId, getToday } from '../utils/calculations';
 import * as db from '../lib/supabaseService';
+import { supabase } from '../lib/supabaseClient';
 import { TextShimmer } from '../components/TextShimmer';
 
 const AppContext = createContext();
@@ -125,44 +126,70 @@ export function AppProvider({ children }) {
   const [state, dispatch] = useReducer(reducer, initialState);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
-    async function init() {
-      try {
-        // Try migration first
-        await db.migrateFromLocalStorage();
+    let mounted = true;
 
-        // Load all data from Supabase
+    async function initData() {
+      try {
+        setLoading(true);
+        await db.migrateFromLocalStorage();
         const data = await db.loadAllData();
 
-        dispatch({
-          type: 'SET_STATE',
-          payload: {
-            products: data.products.length > 0 ? data.products : DEFAULT_PRODUCTS,
-            orders: data.orders || [],
-            brandCosts: data.brandCosts.length > 0 ? data.brandCosts : DEFAULT_BRAND_COSTS,
-            operatingCosts: data.operatingCosts || {},
-          },
-        });
+        if (mounted) {
+          dispatch({
+            type: 'SET_STATE',
+            payload: {
+              products: data.products.length > 0 ? data.products : DEFAULT_PRODUCTS,
+              orders: data.orders || [],
+              brandCosts: data.brandCosts.length > 0 ? data.brandCosts : DEFAULT_BRAND_COSTS,
+              operatingCosts: data.operatingCosts || {},
+            },
+          });
+        }
       } catch (e) {
         console.error('Failed to load from Supabase:', e);
-        setError(e.message);
-
-        // Fallback to localStorage
-        try {
-          const saved = localStorage.getItem('driball_data');
-          if (saved) {
-            const localData = JSON.parse(saved);
-            dispatch({ type: 'SET_STATE', payload: localData });
-          }
-        } catch (localErr) {
-          console.error('Failed to load from localStorage too:', localErr);
-        }
+        if (mounted) setError(e.message);
       } finally {
-        setLoading(false);
+        if (mounted) setLoading(false);
       }
     }
-    init();
+
+    async function checkAuth() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        if (mounted) setUser(session.user);
+        await initData();
+      } else {
+        if (mounted) {
+          setUser(null);
+          setLoading(false);
+        }
+      }
+    }
+
+    checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        if (mounted) setUser(session.user);
+        if (event === 'SIGNED_IN') {
+          await initData();
+        }
+      } else {
+        if (mounted) {
+          setUser(null);
+          dispatch({ type: 'LOAD_STATE', payload: initialState });
+          setLoading(false);
+        }
+      }
+    });
+
+    return () => {
+      mounted = false;
+      subscription?.unsubscribe();
+    };
   }, []);
 
   if (loading) {
@@ -212,7 +239,7 @@ export function AppProvider({ children }) {
   }
 
   return (
-    <AppContext.Provider value={{ state, dispatch }}>
+    <AppContext.Provider value={{ state, dispatch, user }}>
       {children}
     </AppContext.Provider>
   );
