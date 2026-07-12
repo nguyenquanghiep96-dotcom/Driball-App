@@ -33,8 +33,10 @@ export default function LoginPage() {
       console.error('Login error:', err);
       if (err.message === 'Invalid login credentials') {
         setError('Email hoặc mật khẩu không chính xác');
+      } else if (err.message.includes('Email not confirmed')) {
+        setError('Tài khoản chưa được xác thực email. Hãy vào Supabase bỏ chọn "Confirm email" hoặc xác thực tài khoản nhé.');
       } else {
-        setError('Đã xảy ra lỗi khi đăng nhập. Vui lòng thử lại.');
+        setError(`Lỗi: ${err.message}`);
       }
     } finally {
       setLoading(false);
