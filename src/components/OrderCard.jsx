@@ -60,9 +60,19 @@ export default function OrderCard({ order }) {
         {/* Name + Product line tag + Status */}
         <div style={{ flex: 1, minWidth: 0 }}>
           <div className="flex-between">
-            <span className="text-headline" style={{ flex: 1, marginRight: 8 }}>
-              {order.customerName || 'Chưa đặt tên'}
-            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1, marginRight: 8 }}>
+              <span className="text-headline">
+                {order.customerName || 'Chưa đặt tên'}
+              </span>
+              <span style={{
+                fontSize: 9, fontWeight: 700, padding: '1px 6px',
+                borderRadius: 4, letterSpacing: 0.4, flexShrink: 0,
+                background: order.category === 'retail' ? 'rgba(255,159,10,0.18)' : 'rgba(10,132,255,0.13)',
+                color: order.category === 'retail' ? '#ff9f0a' : 'var(--color-blue)',
+              }}>
+                {order.category === 'retail' ? 'Bán lẻ' : 'Đặt đội'}
+              </span>
+            </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               {order.source && <SourceIcon source={order.source} size={14} />}
               <StatusBadge status={order.status} />

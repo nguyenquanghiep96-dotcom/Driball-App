@@ -34,6 +34,7 @@ export default function CreateOrderPage() {
     shippingAddress: '',
     productId: state.products[0]?.id || '',
     colorId: state.products[0]?.colors?.[0]?.id || '',
+    category: 'team',
     printCost: 30000,
     logo3dCost: 0,
     outsourceCost: 30000,
@@ -50,7 +51,10 @@ export default function CreateOrderPage() {
 
   const product = state.products.find(p => p.id === form.productId);
   const retailPrice = product?.prices?.tier1 || 0;
-  const baseUnitPrice = product ? getPriceByQuantity(product, form.quantity) : 0;
+  const isRetail = form.category === 'retail';
+  const baseUnitPrice = isRetail
+    ? (product?.prices?.tier1 || 0)
+    : (product ? getPriceByQuantity(product, form.quantity) : 0);
   const unitPrice = form.overrideUnitPrice !== null ? Number(form.overrideUnitPrice) : baseUnitPrice;
   const printCost = Number(form.printCost) || 0;
   const logo3dCost = Number(form.logo3dCost) || 0;
@@ -150,6 +154,37 @@ export default function CreateOrderPage() {
             />
           </div>
           <SourcePicker value={form.source} onChange={v => updateField('source', v)} />
+          <div className="form-row">
+            <label>Danh mục</label>
+            <div style={{ display: 'flex', gap: 8, marginLeft: 'auto' }}>
+              {[{ key: 'team', label: 'Đặt đội' }, { key: 'retail', label: 'Bán lẻ' }].map(cat => (
+                <button
+                  key={cat.key}
+                  type="button"
+                  onClick={() => {
+                    updateField('category', cat.key);
+                    if (cat.key === 'retail') {
+                      updateField('quantity', 1);
+                    } else {
+                      updateField('quantity', 10);
+                    }
+                    updateField('overrideUnitPrice', null);
+                  }}
+                  style={{
+                    padding: '5px 14px', borderRadius: 8, fontSize: 13, fontWeight: 600,
+                    border: 'none', cursor: 'pointer',
+                    background: form.category === cat.key
+                      ? (cat.key === 'team' ? 'var(--color-blue)' : '#ff9f0a')
+                      : 'var(--color-bg-tertiary)',
+                    color: form.category === cat.key ? '#fff' : 'var(--color-label-secondary)',
+                    transition: 'all 0.2s',
+                  }}
+                >
+                  {cat.label}
+                </button>
+              ))}
+            </div>
+          </div>
           <div className="form-row">
             <label>Ngày tạo đơn</label>
             <input

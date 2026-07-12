@@ -5,16 +5,23 @@ import { useApp } from '../context/AppContext';
 import OrderCard from '../components/OrderCard';
 import { formatCurrency, formatCompact, calculateOrderTotal, calculateMonthlyStats, getCurrentMonth } from '../utils/calculations';
 
-const ORDER_TABS = [
+const STATUS_TABS = [
   { key: 'all', label: 'Tất cả' },
   { key: 'pending', label: 'Chưa hoàn thành' },
   { key: 'completed', label: 'Đã hoàn thành' },
+];
+
+const CATEGORY_TABS = [
+  { key: 'all', label: 'Tất cả' },
+  { key: 'team', label: 'Đặt đội' },
+  { key: 'retail', label: 'Bán lẻ' },
 ];
 
 export default function OrdersPage() {
   const { state } = useApp();
   const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState('all');
+  const [categoryFilter, setCategoryFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const currentMonthStr = getCurrentMonth(); // 'YYYY-MM'
   const [currentY, currentM] = currentMonthStr.split('-');
@@ -48,6 +55,9 @@ export default function OrdersPage() {
 
   const filteredOrders = useMemo(() => {
     let orders = selectedMonthOrders;
+    if (categoryFilter !== 'all') {
+      orders = orders.filter(o => (o.category || 'team') === categoryFilter);
+    }
     if (activeFilter === 'pending') {
       orders = orders.filter(o => o.status !== 'completed');
     } else if (activeFilter === 'completed') {
@@ -65,7 +75,7 @@ export default function OrdersPage() {
       if (aCompleted !== bCompleted) return aCompleted - bCompleted;
       return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
     });
-  }, [selectedMonthOrders, activeFilter, searchQuery]);
+  }, [selectedMonthOrders, activeFilter, categoryFilter, searchQuery]);
 
   const monthStats = useMemo(() => {
     return calculateMonthlyStats(state.orders, state.products, selectedMonthPrefix);
@@ -171,9 +181,24 @@ export default function OrdersPage() {
         </div>
       </div>
 
-      {/* Filter Tabs */}
+      {/* Category + Status Filters */}
       <div className="filter-scroll">
-        {ORDER_TABS.map(t => (
+        {CATEGORY_TABS.map(t => (
+          <button
+            key={t.key}
+            className={`filter-pill ${categoryFilter === t.key ? 'active' : ''}`}
+            onClick={() => setCategoryFilter(t.key)}
+            style={{
+              background: categoryFilter === t.key
+                ? (t.key === 'retail' ? '#ff9f0a' : t.key === 'team' ? 'var(--color-blue)' : 'var(--color-blue)')
+                : 'var(--color-bg-secondary)'
+            }}
+          >
+            {t.label}
+          </button>
+        ))}
+        <div style={{ width: 1, background: 'var(--color-separator)', margin: '0 4px', alignSelf: 'stretch' }} />
+        {STATUS_TABS.map(t => (
           <button
             key={t.key}
             className={`filter-pill ${activeFilter === t.key ? 'active' : ''}`}

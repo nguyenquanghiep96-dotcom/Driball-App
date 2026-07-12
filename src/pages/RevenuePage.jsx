@@ -73,6 +73,23 @@ export default function RevenuePage() {
     });
   }, [state.orders, filterKey, viewMode]);
 
+  // Category breakdown
+  const categoryStats = useMemo(() => {
+    const calc = (cat) => {
+      const orders = monthOrders.filter(o => (o.category || 'team') === cat);
+      const revenue = orders.reduce((sum, o) => {
+        const product = state.products.find(p => p.id === o.productId);
+        return sum + (product ? calculateOrderTotal(o, product) : 0);
+      }, 0);
+      const profit = orders.reduce((sum, o) => {
+        const product = state.products.find(p => p.id === o.productId);
+        return sum + (product ? calculateOrderProfit(o, product) : 0);
+      }, 0);
+      return { revenue, profit, count: orders.length };
+    };
+    return { team: calc('team'), retail: calc('retail') };
+  }, [monthOrders, state.products]);
+
   // Chart data
   const chartData = useMemo(() => {
     const months = [];
@@ -198,6 +215,38 @@ export default function RevenuePage() {
           <div className="stat-card accent-teal">
             <div className="stat-card-value">{monthStats.totalQuantity}</div>
             <div className="stat-card-label">SP đã bán</div>
+          </div>
+        </div>
+
+        {/* Category Breakdown */}
+        <div style={{
+          background: 'var(--color-bg-secondary)', borderRadius: 'var(--radius-md)',
+          padding: '14px 16px', marginBottom: 16,
+        }}>
+          <div className="text-subheadline" style={{ fontWeight: 600, marginBottom: 12 }}>Phân loại</div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            {[
+              { key: 'team', label: 'Đặt đội', color: 'var(--color-blue)', bg: 'rgba(10,132,255,0.1)' },
+              { key: 'retail', label: 'Bán lẻ', color: '#ff9f0a', bg: 'rgba(255,159,10,0.1)' },
+            ].map(cat => {
+              const stats = categoryStats[cat.key];
+              return (
+                <div key={cat.key} style={{
+                  background: cat.bg, borderRadius: 12, padding: '12px 14px',
+                  border: `1px solid ${cat.color}30`,
+                }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: cat.color, marginBottom: 6, letterSpacing: 0.4 }}>
+                    {cat.label} • {stats.count} đơn
+                  </div>
+                  <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 2 }}>
+                    {formatCompact(stats.revenue)}
+                  </div>
+                  <div style={{ fontSize: 12, color: 'var(--color-label-secondary)' }}>
+                    LN: {formatCompact(stats.profit)}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
