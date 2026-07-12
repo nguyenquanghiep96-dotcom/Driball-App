@@ -18,14 +18,9 @@ export default function OrderCard({ order }) {
   const product = state.products.find(p => p.id === order.productId);
   const printCost = Number(order.printCost) || Number(order.printPackagePrice) || 0;
   const logo3dCost = Number(order.logo3dCost) || 0;
-  const totalPrintCost = printCost + logo3dCost;
 
-  const total = product
-    ? calculateOrderTotal(order, product)
-    : 0;
-  const profit = product
-    ? calculateOrderProfit(order, product)
-    : 0;
+  const total = product ? calculateOrderTotal(order, product) : 0;
+  const profit = product ? calculateOrderProfit(order, product) : 0;
   const deliveryDate = calculateDeliveryDate(order.depositDate);
   const tc = TAG_COLORS[product?.tag] || { bg: 'rgba(142,142,147,0.15)', color: '#8e8e93' };
   const unitPrice = order.snapshotUnitPrice ?? (order.overrideUnitPrice !== null && order.overrideUnitPrice !== undefined ? order.overrideUnitPrice : (product ? getPriceByQuantity(product, order.quantity) : 0));
@@ -41,7 +36,7 @@ export default function OrderCard({ order }) {
       tabIndex={0}
       style={{ cursor: 'pointer' }}
     >
-      {/* Top row: Thumbnail + Customer info + Status */}
+      {/* Top row: Thumbnail + Customer info */}
       <div style={{ display: 'flex', gap: 12, marginBottom: 10 }}>
         {/* Product Thumbnail */}
         <div style={{
@@ -57,30 +52,27 @@ export default function OrderCard({ order }) {
           )}
         </div>
 
-        {/* Name + Product line tag + Status */}
+        {/* Name + details */}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div className="flex-between">
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1, marginRight: 8 }}>
-              <span className="text-headline">
-                {order.customerName || 'Chưa đặt tên'}
-              </span>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span className="text-headline" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {order.customerName || 'Ch\u01b0a \u0111\u1eb7t t\u00ean'}
+            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0, marginLeft: 8 }}>
               <span style={{
                 fontSize: 9, fontWeight: 700, padding: '1px 6px',
-                borderRadius: 4, letterSpacing: 0.4, flexShrink: 0,
+                borderRadius: 4, letterSpacing: 0.4,
                 background: order.category === 'retail' ? 'rgba(255,159,10,0.18)' : 'rgba(10,132,255,0.13)',
                 color: order.category === 'retail' ? '#ff9f0a' : 'var(--color-blue)',
               }}>
-                {order.category === 'retail' ? 'Bán lẻ' : 'Đặt đội'}
+                {order.category === 'retail' ? 'B\u00e1n l\u1ebb' : '\u0110\u1eb7t \u0111\u1ed9i'}
               </span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               {order.source && <SourceIcon source={order.source} size={14} />}
-              <StatusBadge status={order.status} />
             </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
             <span className="text-caption1 text-secondary">
-              {product?.name || '—'}
+              {product?.name || '\u2014'}
             </span>
             {product?.tag && (
               <span style={{
@@ -92,10 +84,10 @@ export default function OrderCard({ order }) {
               </span>
             )}
             {colorObj?.name && (
-              <span className="text-caption1 text-tertiary">• {colorObj.name}</span>
+              <span className="text-caption1 text-tertiary">{'\u2022'} {colorObj.name}</span>
             )}
             <span className="text-caption1 text-tertiary">
-              • {order.quantity} bộ • {formatCurrency(unitPrice)}/bộ
+              {'\u2022'} {order.quantity} b{'\u1ed9'} {'\u2022'} {formatCurrency(unitPrice)}/b{'\u1ed9'}
             </span>
           </div>
         </div>
@@ -109,26 +101,29 @@ export default function OrderCard({ order }) {
         marginBottom: 10,
       }}>
         <div>
-          <div className="text-caption1 text-tertiary">Tổng đơn</div>
+          <div className="text-caption1 text-tertiary">T{'\u1ed5'}ng {'\u0111\u01a1'}n</div>
           <div className="text-subheadline" style={{ fontWeight: 600 }}>
             {formatCurrency(total)}
           </div>
         </div>
         <div>
-          <div className="text-caption1 text-tertiary">Lợi nhuận</div>
+          <div className="text-caption1 text-tertiary">L{'\u1ee3'}i nhu{'\u1eadn'}</div>
           <div className="text-subheadline" style={{ fontWeight: 600, color: profit >= 0 ? 'var(--color-green)' : 'var(--color-red)' }}>
             {formatCurrency(profit)}
           </div>
         </div>
       </div>
 
-      {/* Bottom row: Dates */}
+      {/* Bottom row: Status + Delivery */}
       <div style={{ paddingTop: 8, borderTop: '0.33px solid var(--color-separator)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span className="text-caption1 text-tertiary">
-            Dự kiến giao: {deliveryDate ? formatDate(deliveryDate) : '—'}
-          </span>
-          <ChevronRight size={14} color="var(--color-label-quaternary)" />
+          <StatusBadge status={order.status} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <span className="text-caption1 text-tertiary">
+              {deliveryDate ? formatDate(deliveryDate) : '\u2014'}
+            </span>
+            <ChevronRight size={14} color="var(--color-label-quaternary)" />
+          </div>
         </div>
       </div>
     </div>

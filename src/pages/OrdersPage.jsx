@@ -12,7 +12,6 @@ const STATUS_TABS = [
 ];
 
 const CATEGORY_TABS = [
-  { key: 'all', label: 'Tất cả' },
   { key: 'team', label: 'Đặt đội' },
   { key: 'retail', label: 'Bán lẻ' },
 ];
@@ -21,7 +20,7 @@ export default function OrdersPage() {
   const { state } = useApp();
   const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState('all');
-  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [categoryFilter, setCategoryFilter] = useState('team');
   const [searchQuery, setSearchQuery] = useState('');
   const currentMonthStr = getCurrentMonth(); // 'YYYY-MM'
   const [currentY, currentM] = currentMonthStr.split('-');
