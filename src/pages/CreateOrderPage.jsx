@@ -10,7 +10,7 @@ function MoneyInput({ value, onChange, placeholder, style }) {
   const [isFocused, setIsFocused] = useState(false);
   const displayValue = isFocused
     ? (value || '')
-    : (value ? new Intl.NumberFormat('en-US').format(value) + 'đ' : '');
+    : (value != null && value !== '' ? new Intl.NumberFormat('en-US').format(value) + 'đ' : '');
   return (
     <input
       type={isFocused ? 'number' : 'text'}

@@ -86,11 +86,10 @@ export function calculateDeliveryDate(depositDate) {
 export function formatDate(dateStr) {
   if (!dateStr) return '—';
   const date = new Date(dateStr);
-  return date.toLocaleDateString('vi-VN', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  });
+  const d = date.getDate();
+  const m = date.getMonth() + 1;
+  const y = date.getFullYear();
+  return `${d}/${m}/${y}`;
 }
 
 /**
