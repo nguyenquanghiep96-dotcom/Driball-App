@@ -165,8 +165,14 @@ export default function CreateOrderPage() {
                     updateField('category', cat.key);
                     if (cat.key === 'retail') {
                       updateField('quantity', 1);
+                      updateField('printCost', 0);
+                      updateField('logo3dCost', 0);
+                      updateField('outsourceCost', 0);
                     } else {
                       updateField('quantity', 10);
+                      updateField('printCost', 30000);
+                      updateField('logo3dCost', 0);
+                      updateField('outsourceCost', 30000);
                     }
                     updateField('overrideUnitPrice', null);
                   }}

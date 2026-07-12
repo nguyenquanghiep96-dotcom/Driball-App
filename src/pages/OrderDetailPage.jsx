@@ -237,6 +237,29 @@ export default function OrderDetailPage() {
             </div>
             <SourcePicker value={editForm.source || ''} onChange={v => updateEditField('source', v)} />
             <div className="form-row">
+              <label>Danh mục</label>
+              <div style={{ display: 'flex', gap: 8, marginLeft: 'auto' }}>
+                {[{ key: 'team', label: 'Đặt đội' }, { key: 'retail', label: 'Bán lẻ' }].map(cat => (
+                  <button
+                    key={cat.key}
+                    type="button"
+                    onClick={() => updateEditField('category', cat.key)}
+                    style={{
+                      padding: '5px 14px', borderRadius: 8, fontSize: 13, fontWeight: 600,
+                      border: 'none', cursor: 'pointer',
+                      background: (editForm.category || 'team') === cat.key
+                        ? (cat.key === 'team' ? 'var(--color-blue)' : '#ff9f0a')
+                        : 'var(--color-bg-tertiary)',
+                      color: (editForm.category || 'team') === cat.key ? '#fff' : 'var(--color-label-secondary)',
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="form-row">
               <label>Ngày tạo đơn</label>
               <input
                 type="date"

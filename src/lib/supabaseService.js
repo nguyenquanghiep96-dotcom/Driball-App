@@ -323,6 +323,7 @@ function camelCaseOrder(row) {
     depositDate: row.deposit_date || '',
     status: row.status || 'demo',
     source: row.source || '',
+    category: row.category || 'team',
     notes: row.notes || '',
     createdAt: row.created_at,
   };
@@ -345,6 +346,7 @@ function snakeCaseOrder(o) {
     deposit_date: o.depositDate || null,
     status: o.status || 'demo',
     source: o.source || '',
+    category: o.category || 'team',
     notes: o.notes || '',
     created_at: o.createdAt || new Date().toISOString(),
   };

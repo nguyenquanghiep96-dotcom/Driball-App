@@ -7,6 +7,7 @@ import CreateOrderPage from './pages/CreateOrderPage';
 import OrderDetailPage from './pages/OrderDetailPage';
 import ProductsPage from './pages/ProductsPage';
 import RevenuePage from './pages/RevenuePage';
+import ProfilePage from './pages/ProfilePage';
 import LoginPage from './pages/LoginPage';
 import { useApp } from './context/AppContext';
 
@@ -28,6 +29,7 @@ function Main() {
             <Route path="/order/:id" element={<OrderDetailPage />} />
             <Route path="/products" element={<ProductsPage />} />
             <Route path="/revenue" element={<RevenuePage />} />
+            <Route path="/profile" element={<ProfilePage />} />
           </Routes>
         </div>
       </div>

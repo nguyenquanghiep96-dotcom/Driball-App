@@ -83,6 +83,28 @@
   --tab-bar-height: 83px;
 }
 
+/* --- Light Mode --- */
+[data-theme="light"] {
+  --color-bg: #f2f2f7;
+  --color-bg-elevated: #ffffff;
+  --color-bg-grouped: #f2f2f7;
+  --color-bg-secondary: #ffffff;
+  --color-bg-tertiary: #e5e5ea;
+  --color-bg-quaternary: #d1d1d6;
+
+  --color-label: #000000;
+  --color-label-secondary: #3c3c4399;
+  --color-label-tertiary: #3c3c434d;
+  --color-label-quaternary: #3c3c432e;
+
+  --color-separator: #c6c6c8;
+  --color-separator-opaque: #c6c6c8;
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
 /* --- Reset & Base --- */
 *, *::before, *::after {
   margin: 0;
